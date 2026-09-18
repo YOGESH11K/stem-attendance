@@ -19,7 +19,7 @@ COPY requirements.txt /tmp/requirements.txt
 # face-recognition-models (its actual dep), then the rest of requirements.
 RUN pip install --no-cache-dir --target=/opt/pydeps dlib-bin==20.0.1
 RUN pip install --no-cache-dir --target=/opt/pydeps face-recognition==1.3.0 --no-deps
-RUN pip install --no-cache-dir --target=/opt/pydeps face-recognition-models==0.1.0
+RUN pip install --no-cache-dir --target=/opt/pydeps face-recognition-models==0.3.0
 RUN pip install --no-cache-dir --target=/opt/pydeps \
     $(grep -v -E '^(dlib-bin|face-recognition)' /tmp/requirements.txt | tr '\n' ' ')
 

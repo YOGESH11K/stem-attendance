@@ -1,3 +1,2 @@
-// Backend API base URL — update this after deploying to Render.
-// Example: https://empireattendance.onrender.com
-const API_BASE = 'https://empirerecorgination.onrender.com';
+// Backend API base URL — the Flask API deployed on Render.
+const API_BASE = 'https://stem-attendance-api.onrender.com';
