@@ -60,6 +60,10 @@ class Config:
     # -- CSRF --
     WTF_CSRF_TIME_LIMIT = int(os.environ.get("WTF_CSRF_TIME_LIMIT", "28800"))  # 8h
     WTF_CSRF_HEADERS = ["X-CSRFToken", "X-CSRF-Token"]
+    # CSRF tokens are enforced via the X-CSRFToken header. Disable the
+    # HTTPS referrer/origin check so a cross-origin SPA (Vercel) can POST —
+    # the signed token + SameSite=None cookie still blocks CSRF.
+    WTF_CSRF_SSL_STRICT = _env_bool("WTF_CSRF_SSL_STRICT", False)
 
     # -- Account policy --
     # When False, self-service registration is disabled (accounts must be
