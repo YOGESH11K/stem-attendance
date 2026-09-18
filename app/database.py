@@ -4,12 +4,12 @@ import logging
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    BLOB,
     Column,
     DateTime,
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     MetaData,
     String,
     Table,
@@ -57,7 +57,7 @@ face_encodings = Table(
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
     Column("student_name", String(128), nullable=False),
-    Column("encoding", BLOB, nullable=False),
+    Column("encoding", LargeBinary, nullable=False),
     Column("photo_path", String(512), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Index("idx_encodings_user", "user_id"),
