@@ -70,29 +70,40 @@ def test_create_user(admin_client):
 
 
 def test_create_user_validation(admin_client):
+    # username containing spaces is rejected
     resp = admin_client.post(
         "/api/users",
-        json={"username": "ab", "password": "StrongPass1", "display_name": "Short"},
+        json={"username": "bad name", "password": "StrongPass1", "display_name": "Bad"},
     )
     assert resp.status_code == 400
 
+    # empty password is rejected
     resp = admin_client.post(
         "/api/users",
-        json={"username": "bad name!", "password": "StrongPass1", "display_name": "Bad"},
+        json={"username": "validuser", "password": "", "display_name": "Ok"},
     )
     assert resp.status_code == 400
 
-    resp = admin_client.post(
-        "/api/users",
-        json={"username": "validuser", "password": "short", "display_name": "Ok"},
-    )
-    assert resp.status_code == 400
-
+    # display name is required
     resp = admin_client.post(
         "/api/users",
         json={"username": "validuser", "password": "StrongPass1", "display_name": ""},
     )
     assert resp.status_code == 400
+
+    # over-long username is rejected
+    resp = admin_client.post(
+        "/api/users",
+        json={"username": "x" * 65, "password": "StrongPass1", "display_name": "Ok"},
+    )
+    assert resp.status_code == 400
+
+    # short username and simple password are allowed now
+    resp = admin_client.post(
+        "/api/users",
+        json={"username": "ab", "password": "1", "display_name": "Short"},
+    )
+    assert resp.status_code == 201
 
 
 def test_create_user_duplicate(admin_client):

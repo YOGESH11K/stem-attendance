@@ -28,7 +28,7 @@ def test_register_duplicate_username(client):
     assert "already exists" in resp.get_data(as_text=True)
 
 
-def test_register_weak_password_rejected(client):
+def test_register_accepts_any_nonempty_password(client):
     resp = client.post(
         "/register",
         data={
@@ -38,29 +38,41 @@ def test_register_weak_password_rejected(client):
             "confirm_password": "1234",
         },
     )
-    body = resp.get_data(as_text=True)
-    assert "at least 8 characters" in body
+    # short/simple passwords are allowed now
+    assert resp.status_code == 302
 
 
-def test_register_password_must_have_letter_and_number(client):
+def test_register_empty_password_rejected(client):
     resp = client.post(
         "/register",
         data={
-            "username": "abcde",
-            "display_name": "Only Letters",
-            "password": "onlyletters",
-            "confirm_password": "onlyletters",
+            "username": "nopass",
+            "display_name": "No Pass",
+            "password": "",
+            "confirm_password": "",
         },
     )
-    body = resp.get_data(as_text=True)
-    assert "letter and one number" in body
+    assert "Password cannot be empty" in resp.get_data(as_text=True)
 
 
-def test_register_invalid_username(client):
+def test_register_accepts_symbols_and_uppercase_username(client):
     resp = client.post(
         "/register",
         data={
-            "username": "bad username!",
+            "username": "My.Name+Tag",
+            "display_name": "Fancy User",
+            "password": "x",
+            "confirm_password": "x",
+        },
+    )
+    assert resp.status_code == 302
+
+
+def test_register_username_with_space_rejected(client):
+    resp = client.post(
+        "/register",
+        data={
+            "username": "bad username",
             "display_name": "Bad User",
             "password": "StrongPass1",
             "confirm_password": "StrongPass1",

@@ -20,7 +20,7 @@ def test_enroll_capture_requires_name(logged_in_client):
 def test_enroll_capture_invalid_student_name(logged_in_client):
     resp = logged_in_client.post(
         "/api/enroll/capture",
-        json={"student_name": "BAD!@#", "image": "data:image/jpeg;base64,"},
+        json={"student_name": "", "image": "data:image/jpeg;base64,"},
     )
     assert resp.status_code == 400
 

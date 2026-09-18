@@ -4,10 +4,10 @@ import re
 from pathlib import Path
 
 
-USERNAME_RE = re.compile(r"^[a-z0-9_]{3,32}$")
-STUDENT_NAME_RE = re.compile(r"^[A-Z][A-Za-z0-9 .'\-]{0,49}$")
-DISPLAY_NAME_RE = re.compile(r"^[A-Za-z0-9 .'\-]{2,64}$")
-SCHOOL_RE = re.compile(r"^[A-Za-z0-9 .,'\-&]{0,128}$")
+USERNAME_RE = re.compile(r"^[^\s]{1,64}$")
+STUDENT_NAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,50}$")
+DISPLAY_NAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,128}$")
+SCHOOL_RE = re.compile(r"^[^\x00-\x1f\x7f]{0,128}$")
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
@@ -20,7 +20,7 @@ def validate_username(value):
     value = (value or "").strip().lower()
     if not USERNAME_RE.match(value):
         raise ValidationError(
-            "Username must be 3-32 characters (letters, digits, underscore only)."
+            "Username must be 1-64 characters with no spaces."
         )
     return value
 
@@ -28,24 +28,22 @@ def validate_username(value):
 def validate_display_name(value):
     value = (value or "").strip()
     if not DISPLAY_NAME_RE.match(value):
-        raise ValidationError("Display name must be 2-64 letters, digits, spaces or .'-")
+        raise ValidationError("Display name must be 1-128 characters.")
     return value
 
 
 def validate_school(value):
     value = (value or "").strip()
     if value and not SCHOOL_RE.match(value):
-        raise ValidationError("School name contains invalid characters.")
+        raise ValidationError("School name is too long (max 128 characters).")
     return value
 
 
 def validate_password(password, confirm):
     if password != confirm:
         raise ValidationError("Passwords do not match.")
-    if len(password) < 8:
-        raise ValidationError("Password must be at least 8 characters long.")
-    if not re.search(r"[A-Za-z]", password) or not re.search(r"[0-9]", password):
-        raise ValidationError("Password must contain at least one letter and one number.")
+    if not password:
+        raise ValidationError("Password cannot be empty.")
     if len(password) > 128:
         raise ValidationError("Password is too long (max 128 characters).")
     return password
@@ -54,9 +52,7 @@ def validate_password(password, confirm):
 def validate_student_name(value):
     value = (value or "").strip().upper()
     if not STUDENT_NAME_RE.match(value):
-        raise ValidationError(
-            "Student name must be 1-50 letters/numbers (letters, digits, spaces, .-' allowed)."
-        )
+        raise ValidationError("Student name must be 1-50 characters.")
     return value
 
 

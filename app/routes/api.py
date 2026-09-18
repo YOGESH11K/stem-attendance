@@ -3,7 +3,6 @@
 import csv
 import io
 import logging
-import re
 from datetime import datetime
 
 import cv2
@@ -47,7 +46,10 @@ def _decode_image(data):
         nparr = np.frombuffer(base64.b64decode(raw, validate=True), np.uint8)
     except Exception:
         raise ValidationError("Invalid image encoding")
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    try:
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    except cv2.error:
+        raise ValidationError("Could not decode image")
     if img is None:
         raise ValidationError("Could not decode image")
     return img
@@ -103,22 +105,26 @@ def api_list_users():
 @limiter.limit("30/minute")
 def api_create_user():
     from .. import models
+    from ..utils import (
+        ValidationError,
+        validate_display_name,
+        validate_password,
+        validate_school,
+        validate_username,
+    )
 
     data = request.get_json(silent=True) or {}
-    username = str(data.get("username") or "").strip().lower()
     password = data.get("password") or ""
-    display_name = str(data.get("display_name") or "").strip()
-    school = str(data.get("school") or "").strip()
     role = data.get("role") or "teacher"
 
-    if not username or len(username) < 3 or len(username) > 64:
-        return jsonify({"error": "Username must be 3-64 characters"}), 400
-    if not re.match(r"^[a-z0-9_]+$", username):
-        return jsonify({"error": "Username may only contain letters, digits and underscores"}), 400
-    if len(password) < 8:
-        return jsonify({"error": "Password must be at least 8 characters"}), 400
-    if not display_name:
-        return jsonify({"error": "Display name is required"}), 400
+    try:
+        username = validate_username(data.get("username"))
+        display_name = validate_display_name(data.get("display_name"))
+        school = validate_school(data.get("school"))
+        validate_password(password, password)
+    except ValidationError as exc:
+        return jsonify({"error": str(exc)}), 400
+
     if role not in ("teacher", "admin"):
         role = "teacher"
     if models.get_user_by_username(current_app.db, username):
