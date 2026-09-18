@@ -18,6 +18,7 @@ from werkzeug.exceptions import (
     RequestEntityTooLarge,
     Unauthorized,
 )
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import Config
 from .database import Database
@@ -191,6 +192,11 @@ def create_app(config_object=None):
 
     if not os.path.isabs(app.config["DATA_DIR"]):
         app.config["DATA_DIR"] = os.path.join(project_root, app.config["DATA_DIR"])
+
+    if app.config.get("TRUST_PROXY"):
+        # Behind a reverse proxy (Render), trust one hop of X-Forwarded-* so
+        # the real client IP / scheme are used (rate limiting, secure cookies).
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     _configure_logging(app)
 

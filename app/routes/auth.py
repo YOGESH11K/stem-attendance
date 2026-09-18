@@ -43,7 +43,7 @@ def _wants_json():
 
 
 @bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("10/minute")
+@limiter.limit(lambda: current_app.config.get("LOGIN_RATE_LIMIT", "10/minute"))
 def login():
     wants_json = _wants_json()
     if current_user.is_authenticated:
@@ -80,7 +80,7 @@ def login():
 
 
 @bp.route("/register", methods=["GET", "POST"])
-@limiter.limit("5/hour")
+@limiter.limit(lambda: current_app.config.get("REGISTER_RATE_LIMIT", "30/hour"))
 def register():
     wants_json = _wants_json()
     if current_user.is_authenticated:

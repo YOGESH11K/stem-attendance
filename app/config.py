@@ -84,9 +84,16 @@ class Config:
     MIN_BLUR_VARIANCE = float(os.environ.get("MIN_BLUR_VARIANCE", "40.0"))
     MAX_IMAGE_DIMENSION = int(os.environ.get("MAX_IMAGE_DIMENSION", "1600"))
 
+    # -- Reverse proxy --
+    # Trust X-Forwarded-* headers (needed on Render/Heroku) so the real client
+    # IP and scheme are used. Auto-enabled when RENDER=true.
+    TRUST_PROXY = _env_bool("TRUST_PROXY", os.environ.get("RENDER") == "true")
+
     # -- Rate limiting (in-memory, per process) --
-    RATELIMIT_DEFAULT = "120/minute"
+    RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "120/minute")
     RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
+    LOGIN_RATE_LIMIT = os.environ.get("LOGIN_RATE_LIMIT", "10/minute")
+    REGISTER_RATE_LIMIT = os.environ.get("REGISTER_RATE_LIMIT", "30/hour")
 
     # -- Logging --
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
