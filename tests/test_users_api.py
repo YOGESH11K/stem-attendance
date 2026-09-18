@@ -70,10 +70,10 @@ def test_create_user(admin_client):
 
 
 def test_create_user_validation(admin_client):
-    # username containing spaces is rejected
+    # empty username is rejected
     resp = admin_client.post(
         "/api/users",
-        json={"username": "bad name", "password": "StrongPass1", "display_name": "Bad"},
+        json={"username": "", "password": "StrongPass1", "display_name": "Bad"},
     )
     assert resp.status_code == 400
 
@@ -94,14 +94,14 @@ def test_create_user_validation(admin_client):
     # over-long username is rejected
     resp = admin_client.post(
         "/api/users",
-        json={"username": "x" * 65, "password": "StrongPass1", "display_name": "Ok"},
+        json={"username": "x" * 129, "password": "StrongPass1", "display_name": "Ok"},
     )
     assert resp.status_code == 400
 
-    # short username and simple password are allowed now
+    # short username, spaces, symbols and simple password are allowed now
     resp = admin_client.post(
         "/api/users",
-        json={"username": "ab", "password": "1", "display_name": "Short"},
+        json={"username": "ab c!", "password": "1", "display_name": "Short"},
     )
     assert resp.status_code == 201
 

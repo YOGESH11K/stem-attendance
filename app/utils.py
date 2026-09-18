@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 
-USERNAME_RE = re.compile(r"^[^\s]{1,64}$")
+USERNAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,128}$")
 STUDENT_NAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,50}$")
 DISPLAY_NAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,128}$")
 SCHOOL_RE = re.compile(r"^[^\x00-\x1f\x7f]{0,128}$")
@@ -19,9 +19,7 @@ class ValidationError(Exception):
 def validate_username(value):
     value = (value or "").strip().lower()
     if not USERNAME_RE.match(value):
-        raise ValidationError(
-            "Username must be 1-64 characters with no spaces."
-        )
+        raise ValidationError("Username must be 1-128 characters.")
     return value
 
 

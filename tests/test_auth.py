@@ -68,12 +68,25 @@ def test_register_accepts_symbols_and_uppercase_username(client):
     assert resp.status_code == 302
 
 
-def test_register_username_with_space_rejected(client):
+def test_register_username_with_space_allowed(client):
     resp = client.post(
         "/register",
         data={
             "username": "bad username",
             "display_name": "Bad User",
+            "password": "x",
+            "confirm_password": "x",
+        },
+    )
+    assert resp.status_code == 302
+
+
+def test_register_overlong_username_rejected(client):
+    resp = client.post(
+        "/register",
+        data={
+            "username": "x" * 129,
+            "display_name": "Long User",
             "password": "StrongPass1",
             "confirm_password": "StrongPass1",
         },
