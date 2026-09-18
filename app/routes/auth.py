@@ -42,6 +42,14 @@ def _wants_json():
     return "application/json" in accept and "text/html" not in accept
 
 
+def _input(name):
+    """Read a field from a JSON body (SPA) or a classic form post."""
+    data = request.get_json(silent=True)
+    if isinstance(data, dict) and name in data:
+        return data.get(name)
+    return request.form.get(name)
+
+
 @bp.route("/login", methods=["GET", "POST"])
 @limiter.limit(lambda: current_app.config.get("LOGIN_RATE_LIMIT", "10/minute"))
 def login():
@@ -51,8 +59,8 @@ def login():
             return jsonify({"ok": True, "username": current_user.username})
         return redirect(url_for("dashboard.index"))
     if request.method == "POST":
-        username = (request.form.get("username") or "").strip().lower()
-        password = request.form.get("password") or ""
+        username = (_input("username") or "").strip().lower()
+        password = _input("password") or ""
         db = current_app.db
         user = get_user_by_username(db, username)
         if user and check_password_hash(_user_password_hash(user.id), password):
@@ -93,12 +101,12 @@ def register():
         return render_template("register.html")
     if request.method == "POST":
         try:
-            username = validate_username(request.form.get("username"))
-            display_name = validate_display_name(request.form.get("display_name"))
-            school = validate_school(request.form.get("school"))
-            validate_password(
-                request.form.get("password") or "",
-                request.form.get("confirm_password") or "",
+            username = validate_username(_input("username"))
+            display_name = validate_display_name(_input("display_name"))
+            school = validate_school(_input("school"))
+            password = validate_password(
+                _input("password") or "",
+                _input("confirm_password") or "",
             )
         except ValidationError as exc:
             if wants_json:
@@ -118,7 +126,7 @@ def register():
             if username in current_app.config["ADMIN_USERNAMES"]
             else "teacher"
         )
-        user_id = create_user(db, username, request.form["password"], display_name, school, role=role)
+        user_id = create_user(db, username, password, display_name, school, role=role)
         if user_id is None:
             if wants_json:
                 return jsonify({"error": "Username already exists"}), 409

@@ -21,6 +21,29 @@ def test_register_login_logout_flow(logged_in_client):
     assert "/login" in resp.headers["Location"]
 
 
+def test_register_and_login_via_json(client):
+    resp = client.post(
+        "/register",
+        json={
+            "username": "Json User",
+            "display_name": "Json User",
+            "password": "1",
+            "confirm_password": "1",
+        },
+        headers={"Accept": "application/json"},
+    )
+    assert resp.status_code == 201
+    assert resp.get_json()["ok"] is True
+
+    resp = client.post(
+        "/login",
+        json={"username": "json user", "password": "1"},
+        headers={"Accept": "application/json"},
+    )
+    assert resp.status_code == 200
+    assert resp.get_json()["ok"] is True
+
+
 def test_register_duplicate_username(client):
     register(client)
     resp = register(client)
